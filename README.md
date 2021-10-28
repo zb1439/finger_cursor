@@ -13,6 +13,7 @@ and basic utilities.
 - configurable
 - easy to modify (see playground examples)
 - unified pipeline for both deep learning and traditional CV methods
+- Support Mac OS and Windows
 
 ## Install
 
