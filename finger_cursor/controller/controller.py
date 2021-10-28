@@ -58,8 +58,8 @@ class SimpleRelativeController(Controller):
             self.pressing = True
             self.mouse.move_rel(dx, dy)
         elif gesture == "click":
-            self.mouse.press(right=True)
-            self.mouse.release(right=True)
+            self.mouse.press(right=False)
+            self.mouse.release(right=False)
             return 0, 0
         elif gesture == "right-click":
             self.mouse.press(right=True)
