@@ -1,0 +1,3 @@
+#!/bin/bash
+
+python3 /Users/fanzhibo/Desktop/learning/project/finger_cursor/tools/launch.py $@
