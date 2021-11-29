@@ -32,6 +32,9 @@ setup(
         'easydict',
         'colorama',
         'tabulate',
+        'pynput==1.7.3',
+        'pyobjc==7.3'
+        'mediapipe',
     ],
     scripts=["tools/finger_cursor"],
 )
