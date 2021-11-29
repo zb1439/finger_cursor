@@ -62,7 +62,10 @@ class FeatureExtractorGraph:
 class MediaPipeHandLandmark(FeatureExtractor):
     def __init__(self, all_config, visited):
         super().__init__(all_config, visited)
-        self.model = mp_hands.Hands(static_image_mode=True, max_num_hands=1, min_detection_confidence=0.7)
+        self.model = mp_hands.Hands(static_image_mode=False,
+                                    max_num_hands=1,
+                                    min_detection_confidence=0.7,
+                                    min_tracking_confidence=0.5)
 
     def apply(self, image, extra_info):
         result = self.model.process(image[..., ::-1])

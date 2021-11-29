@@ -3,6 +3,7 @@
 import cv2
 import mediapipe as mp
 import numpy as np
+import time
 
 
 mp_hands = mp.solutions.hands
@@ -13,6 +14,10 @@ mp_drawing_style = mp.solutions.drawing_styles
 cv2.namedWindow("demo")
 windowNames = ["demo"]
 image_buffer = dict()
+
+
+start = time.time()
+frames = 0
 
 
 def _normalize_and_scale(image, method):
@@ -36,6 +41,12 @@ def imshow(image, name=None, text=None, normalize="rescale", show=True):
         color = [255 - color[0], 255 - color[1], 255 - color[2]]
         color = [int(c) for c in color]
         cv2.putText(image, text, (10, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+
+    global frames, start
+    frames += 1
+    fps = (time.time() - start) * 1000 / frames
+
+    cv2.putText(image, "FPS:{:3.1f}".format(fps), (image.shape[1] - 100, 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
     if show:
         if name is not None and name not in windowNames:
             cv2.namedWindow(name)

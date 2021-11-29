@@ -55,6 +55,7 @@ _config_dict = dict(
         ),
         DETECTOR=dict(
             NAME="KalmanDetector",
+            # NAME="IndexTipDetector",
             WRAPPED_NAME="IndexTipDetector",
             FEATURE=[("landmark", "MediaPipeHandLandmark")],
             MEASURE_NOISE=1.,
