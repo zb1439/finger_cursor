@@ -72,8 +72,12 @@ _config_dict = dict(
         HISTORY=2,
         SCALE=(3200, 2400),
     ),
+    APPLICATION=dict(
+        NAME="CursorControl",
+    ),
     VISUALIZATION=dict(
         LANDMARK=True,
+        SHOW_WINDOW=True,
     ),
 )
 

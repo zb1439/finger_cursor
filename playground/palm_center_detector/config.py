@@ -1,12 +1,12 @@
 from finger_cursor.config import BaseConfig
-from wrist_detector import *  # noqa
+from palm_center_detector import *  # noqa
 
 
 _config_dict=dict(
     MODEL=dict(
         DETECTOR=dict(
             NAME="KalmanDetector",
-            WRAPPED_NAME="WristDetector",
+            WRAPPED_NAME="PalmCenterDetector",
             MEASURE_NOISE=1.,
             PROCESS_NOISE=0.003,
         )
