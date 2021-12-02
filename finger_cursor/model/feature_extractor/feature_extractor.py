@@ -103,3 +103,9 @@ class FingerDescriptor(FeatureExtractor):  # rule-based finger indicator, depend
         theta = np.arccos(np.sum(dir * thumb) / (np.linalg.norm(dir) + 1e-5) / (np.linalg.norm(thumb) + 1e-5)) / np.pi * 180
         theta = 0 if np.isnan(theta) else theta
         return theta
+
+
+@FEATURE_EXTRACTOR.register()
+class RotationDescriptor(FeatureExtractor):  # TODO
+    def apply(self, image, extra_info):
+        raise NotImplementedError
