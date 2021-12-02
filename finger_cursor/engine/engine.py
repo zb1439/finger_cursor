@@ -31,6 +31,10 @@ def main_process(cfg):
     app = APPLICATION.get(cfg.APPLICATION.NAME)(cfg)
     draw_landmark = cfg.VISUALIZATION.LANDMARK
     show_window = cfg.VISUALIZATION.SHOW_WINDOW
+    async_app = cfg.APPLICATION.ASYNC
+
+    if async_app:
+        app.async_run()
     while True:
         try:
             frame = next(camera)
@@ -38,11 +42,15 @@ def main_process(cfg):
                 frame, extra_info = preproc(frame, {})
                 feature_graph.apply(frame, extra_info)
                 feature = queue("MediaPipeHandLandmark")[-1]
-                fingers = queue("FingerDescriptor")[-1]
                 cls()
                 det()
                 gesture, coord = ctrl()
-                app.loop()
+                if not async_app:
+                    app.loop()
+                else:
+                    if not app.async_check():
+                        raise ExitException
+
                 if show_window:
                     if draw_landmark:
                         draw_mediapipe(frame, feature, text=gesture + "({:2.1f}, {:2.1f})".format(coord[0], coord[1]))

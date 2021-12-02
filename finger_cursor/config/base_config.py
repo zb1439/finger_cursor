@@ -74,6 +74,7 @@ _config_dict = dict(
     ),
     APPLICATION=dict(
         NAME="CursorControl",
+        ASYNC=False,
     ),
     VISUALIZATION=dict(
         LANDMARK=True,

@@ -26,11 +26,20 @@ class Application:
             self.loop()
             yield
 
+    def async_run(self):
+        raise NotImplementedError
+
+    def async_check(self):
+        return True
+
 
 @APPLICATION.register()
-class CursorControl(Application):
+class CursorControl(Application):  # default application
     def terminate(self):
         pass
 
     def loop(self):
+        pass
+
+    def async_run(self):
         pass

@@ -81,6 +81,10 @@ class FingerDescriptor(FeatureExtractor):  # rule-based finger indicator, depend
             return fingers
 
         landmark = features.multi_hand_landmarks[0].landmark
+        center_point_x = sum([landmark[5].x, landmark[9].x, landmark[17].x]) / 3
+        center_point_y = sum([landmark[5].y, landmark[9].y, landmark[17].y]) / 3
+        normalizer = np.sqrt((center_point_x - landmark[0].x) ** 2 + (center_point_y - landmark[0].y) ** 2)
+
         fingers[0] = self.thumb_angle(landmark) <= 11 or abs(landmark[4].x - landmark[0].x) >= 0.05
         fingers[1] = 0.45 <= self.finger_ratio(landmark, 5) <= 1.0
         fingers[2] = 0.45 <= self.finger_ratio(landmark, 9) <= 1.0 and self.distance(landmark[12], landmark[0]) >= 0.25
@@ -88,8 +92,11 @@ class FingerDescriptor(FeatureExtractor):  # rule-based finger indicator, depend
         fingers[4] = self.distance(landmark[20], landmark[0]) >= 0.2
         return fingers
 
-    def distance(self, pt1, pt2):
-        return np.sqrt((pt1.x - pt2.x) ** 2 + (pt1.y - pt2.y) ** 2)
+    def distance(self, pt1, pt2, normalizer=None):
+        raw_distance = np.sqrt((pt1.x - pt2.x) ** 2 + (pt1.y - pt2.y) ** 2)
+        if normalizer is not None:
+            return raw_distance / (normalizer + 1e-5)
+        return raw_distance
 
     def finger_ratio(self, landmark, base):
         return self.distance(landmark[base+3], landmark[base]) / (self.distance(landmark[base+3], landmark[0]) + 1e-5)

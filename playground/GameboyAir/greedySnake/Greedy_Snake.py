@@ -1,6 +1,6 @@
 # Snake Tutorial Python
 # Modified from https://github.com/GMfatcat/greedySnake
-
+import time
 import random
 import pygame
 import sys
@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 from finger_cursor.engine import Application, APPLICATION
-from finger_cursor.utils import ExitException
+from finger_cursor.utils import ExitException, Process
 
 
 class Cube(object):
@@ -114,7 +114,6 @@ class Snake(object):
                     c.move(c.dirnx, c.dirny)  # If we haven't reached the edge just move in our current direction
 
     def reset(self, pos):
-
         self.head = Cube(pos)
         self.body = []
         self.body.append(self.head)
@@ -208,8 +207,8 @@ class GreedySnake(Application):
         self.playing_time = 1
 
     def loop(self):
-        pygame.time.delay(200)  # This will delay the game so it doesn't run too quickly
-        self.clock.tick(100)  # Will ensure our game runs at 10 FPS
+        pygame.time.delay(300)  # This will delay the game so it doesn't run too quickly
+        self.clock.tick(300)  # Will ensure our game runs at 10 FPS
         self.s.move()
         if self.s.body[0].pos == self.snack.pos:  # 如果被吃掉了 要產生新的點心
             self.s.addCube()
@@ -221,6 +220,8 @@ class GreedySnake(Application):
                 playt = str(self.playing_time)
                 print('Times you play:  ' + playt)
                 a = str(len(self.s.body) - 1)  # 頭一開始就有了 只算吃到幾個snack
+                self.redraw_window()
+                time.sleep(0.5)
                 message_box('You lose >_<', ' Your score is : ' + a)
                 self.s.reset((10, 10))
                 self.playing_time += 1
@@ -228,8 +229,17 @@ class GreedySnake(Application):
 
         self.redraw_window()  # This will refresh our screen
 
+    def async_run(self):
+        import subprocess
+        p = subprocess.Popen(["python", "greedy_snake.py"])
+        self.p = p
+
+    def async_check(self):
+        return self.p.poll() is None
+
     def terminate(self):
-        pass
+        if hasattr(self, "p"):
+            self.p.terminate()
 
     def redraw_window(self):
         self.win.fill((0, 0, 0))  # Fills the screen with black
@@ -237,3 +247,12 @@ class GreedySnake(Application):
         self.snack.draw(self.win)  # NEW
         drawGrid(self.width, self.rows, self.win)  # Will draw our grid lines
         pygame.display.update()  # Updates the screen
+
+
+if __name__ == "__main__":
+    game = GreedySnake(None)
+    while True:
+        try:
+            game.loop()
+        except ExitException:
+            break
