@@ -35,6 +35,7 @@ setup(
         'pynput==1.7.3',
         'pyobjc==7.3'
         'mediapipe',
+        'pygame==2.1.0'
     ],
     scripts=["tools/finger_cursor"],
 )
