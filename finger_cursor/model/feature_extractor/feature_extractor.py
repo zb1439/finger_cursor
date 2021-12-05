@@ -81,15 +81,20 @@ class FingerDescriptor(FeatureExtractor):  # rule-based finger indicator, depend
             return fingers
 
         landmark = features.multi_hand_landmarks[0].landmark
-        center_point_x = sum([landmark[5].x, landmark[9].x, landmark[17].x]) / 3
-        center_point_y = sum([landmark[5].y, landmark[9].y, landmark[17].y]) / 3
-        normalizer = np.sqrt((center_point_x - landmark[0].x) ** 2 + (center_point_y - landmark[0].y) ** 2)
+        # center_point_x = sum([landmark[5].x, landmark[9].x, landmark[17].x]) / 3
+        # center_point_y = sum([landmark[5].y, landmark[9].y, landmark[17].y]) / 3
+        # normalizer = np.sqrt((center_point_x - landmark[0].x) ** 2 + (center_point_y - landmark[0].y) ** 2)
+        # finger_angles = [self._get_angle(landmark, i) for i in range(5)]
 
         fingers[0] = self.thumb_angle(landmark) <= 11 or abs(landmark[4].x - landmark[0].x) >= 0.05
         fingers[1] = 0.45 <= self.finger_ratio(landmark, 5) <= 1.0
+        # fingers[1] = finger_angles[1] < 15  # FIXME: pinch becomes difficult
         fingers[2] = 0.45 <= self.finger_ratio(landmark, 9) <= 1.0 and self.distance(landmark[12], landmark[0]) >= 0.25
+        # fingers[2] = finger_angles[2] < 25
         fingers[3] = self.distance(landmark[16], landmark[0]) >= 0.28
+        # fingers[3] = finger_angles[3] < 25
         fingers[4] = self.distance(landmark[20], landmark[0]) >= 0.2
+        # fingers[4] = finger_angles[4] < 15
         return fingers
 
     def distance(self, pt1, pt2, normalizer=None):
@@ -110,6 +115,32 @@ class FingerDescriptor(FeatureExtractor):  # rule-based finger indicator, depend
         theta = np.arccos(np.sum(dir * thumb) / (np.linalg.norm(dir) + 1e-5) / (np.linalg.norm(thumb) + 1e-5)) / np.pi * 180
         theta = 0 if np.isnan(theta) else theta
         return theta
+
+    # Methods for finger descriptor V2
+    def _get_line(self, landmarks, idx1, idx2):
+        return np.array([
+            landmarks[idx1].x - landmarks[idx2].x,
+            landmarks[idx1].y - landmarks[idx2].y,
+            landmarks[idx1].z - landmarks[idx2].z
+        ])
+
+    def _get_segments(self, landmarks, finger_index):
+        mcp_idx = finger_index * 4 + 1
+        segm = [self._get_line(landmarks, 0, mcp_idx)]
+        for i in range(3):
+            segm.append(self._get_line(landmarks, mcp_idx + i, mcp_idx + i + 1))
+        return segm
+
+    def _compute_angle(self, line1, line2):
+        cos = np.sum(line1 * line2) / (np.linalg.norm(line1) * np.linalg.norm(line2))
+        theta = np.arccos(cos)
+        return theta * 180 / np.pi
+
+    def _get_angle(self, landmarks, finger_index):
+        segm = self._get_segments(landmarks, finger_index)
+        first_segm = segm[-1]
+        angles = [self._compute_angle(first_segm, _segm) for _segm in segm[:-1]]
+        return max(angles)
 
 
 @FEATURE_EXTRACTOR.register()
