@@ -24,7 +24,7 @@ clock = GAME_TIME.Clock()
 
 # Initialise display
 surface = pygame.display.set_mode((windowWidth, windowHeight))
-pygame.display.set_caption("Breakout")
+pygame.display.set_caption("breakoutClone")
 
 # Load images and fonts. This setup is so that the correct location is used for
 # loading assets no matter where the program is run from
