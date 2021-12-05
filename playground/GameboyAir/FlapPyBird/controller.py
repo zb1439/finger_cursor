@@ -9,7 +9,6 @@ class FlappyBirdController(Controller):
         self.keyboard = Keyboard()
 
     def apply(self, gestures, coords):
-        print(gestures)
         if len(gestures) >= 2 and gestures[-1] == "open":
             start = float("inf")
             for i in range(len(gestures) - 1):
