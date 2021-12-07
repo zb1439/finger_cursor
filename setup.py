@@ -33,9 +33,10 @@ setup(
         'colorama',
         'tabulate',
         'pynput==1.7.3',
-        'pyobjc==7.3'
+        'pyobjc==7.3',
         'mediapipe',
-        'pygame==2.1.0'
+        'pygame==2.1.0',
+        'nes-py'
     ],
     scripts=["tools/finger_cursor"],
 )
