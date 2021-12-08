@@ -5,6 +5,8 @@ def str_to_key(func):
     def wrapper(obj, key):
         if hasattr(Key, key):
             key = getattr(Key, key)
+        else:
+            raise ValueError(f"{key} does not exist in the key map")
         func(obj, key)
 
     return wrapper
@@ -29,4 +31,7 @@ class Keyboard:
 
     @str_to_key
     def pressed(self, key):
+        """
+        Pressed is safe since it will finally release the key.
+        """
         self.ctrl.pressed(key)

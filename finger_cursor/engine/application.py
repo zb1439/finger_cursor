@@ -4,7 +4,7 @@ from finger_cursor.utils import Registry
 APPLICATION = Registry("APPLICATION")
 
 
-class Application:
+class Application:  # TODO: set async command in config
     def __init__(self, cfg):
         self.cfg = cfg
 

@@ -68,21 +68,29 @@ class Snake(object):
 
             for key in keys:  # Loop through all the keys
                 if keys[pygame.K_LEFT]:
+                    if self.dirny == 0 and self.dirnx == 1:
+                        break
                     self.dirnx = -1
                     self.dirny = 0
                     self.turns[self.head.pos[:]] = [self.dirnx, self.dirny]
 
                 elif keys[pygame.K_RIGHT]:
+                    if self.dirny == 0 and self.dirnx == -1:
+                        break
                     self.dirnx = 1
                     self.dirny = 0
                     self.turns[self.head.pos[:]] = [self.dirnx, self.dirny]
 
                 elif keys[pygame.K_UP]:
+                    if self.dirnx == 0 and self.dirny == 1:
+                        break
                     self.dirnx = 0
                     self.dirny = -1
                     self.turns[self.head.pos[:]] = [self.dirnx, self.dirny]
 
                 elif keys[pygame.K_DOWN]:
+                    if self.dirnx == 0 and self.dirny == -1:
+                        break
                     self.dirnx = 0
                     self.dirny = 1
                     self.turns[self.head.pos[:]] = [self.dirnx, self.dirny]

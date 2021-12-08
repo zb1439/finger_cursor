@@ -62,8 +62,20 @@ class SimpleRelativeController(Controller):
             self.mouse.release(right=False)
             return 0, 0
         elif gesture == "right-click":
-            self.mouse.press(right=True)
-            self.mouse.release(right=True)
+            if len(gestures) >= 2:
+                start = float("inf")
+                for i in range(len(gestures) - 1):
+                    if gestures[i] != "right-click":
+                        start = i
+                if start < len(gestures):
+                    all_na = True
+                    for i in range(start + 1, len(gestures) - 1):
+                        if gestures[i] == "right-click":
+                            all_na = False
+                            break
+                    if all_na:
+                        self.mouse.press(right=True)
+                        self.mouse.release(right=True)
             return 0, 0
         elif self.pressing:
             self.mouse.release(right=self.right_key)

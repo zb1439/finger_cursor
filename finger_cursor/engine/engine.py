@@ -1,7 +1,8 @@
 import argparse
+import sys
 
 from finger_cursor.controller import CONTROLLER
-from finger_cursor.driver import CAMERA
+from finger_cursor.driver import CAMERA, Keyboard, MacMouse, WinMouse
 from finger_cursor.model import CLASSIFIER, DETECTOR, FeatureExtractorGraph
 from finger_cursor.preprocessor import PreprocessorStack
 from finger_cursor.utils import AdaptingException, ExitException, queue
@@ -19,6 +20,15 @@ def merge_args_to_config(args, config):
     if args.show_window:
         config.VISUALIZATION.SHOW_WINDOW = True
     return config
+
+
+def exit():
+    if sys.platform == "darwin" or sys.platform == "win32":
+        mouse = WinMouse() if sys.platform == "win32" else MacMouse()
+        mouse.release()
+        mouse.release(True)
+    else:
+        pass
 
 
 def main_process(cfg):
@@ -60,4 +70,5 @@ def main_process(cfg):
                 pass
         except ExitException:
             app.terminate()
+            exit()
             break

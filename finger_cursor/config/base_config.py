@@ -69,7 +69,7 @@ _config_dict = dict(
     CONTROLLER=dict(
         NAME="SimpleRelativeController",
         # NAME="SimpleAbsoluteController",
-        HISTORY=2,
+        HISTORY=5,
         SCALE=(3200, 2400),
     ),
     APPLICATION=dict(
