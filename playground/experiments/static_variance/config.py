@@ -11,13 +11,13 @@ _config_dict = dict(
     DRIVER=dict(
         CAMERA=dict(
             NAME="VirtualCamera",
-            VIDEO_PATH="static2.mp4",
+            VIDEO_PATH="static1.mp4",
         )
     ),
     MODEL=dict(
         DETECTOR=dict(
-            NAME="FullPointKalmanDetector",
-            # NAME="FullPointDetector",
+            # NAME="FullPointKalmanDetector",
+            NAME="FullPointDetector",
         )
     ),
     CONTROLLER=dict(

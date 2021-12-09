@@ -38,6 +38,12 @@ class Controller:
 
 
 @CONTROLLER.register()
+class DummyController(Controller):
+    def apply(self, gestures, coords):
+        return 0, 0
+
+
+@CONTROLLER.register()
 class SimpleRelativeController(Controller):
     def __init__(self, cfg):
         super().__init__(cfg)

@@ -37,14 +37,24 @@ class Detector:
 
 
 @DETECTOR.register()
-class IndexTipDetector(Detector):
+class KeypointDetector(Detector):
+    def __init__(self, cfg):
+        super().__init__(cfg)
+        self.kp_idx = cfg.MODEL.DETECTOR.TRACK_KEYPOINT
+
     def predict(self, features):
         landmarks = features["landmark"]
         if not landmarks.multi_hand_landmarks:
             return -1, -1
         landmarks = landmarks.multi_hand_landmarks[0].landmark
-        return landmarks[8].x, landmarks[8].y
+        return landmarks[self.kp_idx].x, landmarks[self.kp_idx].y
 
+
+@DETECTOR.register()
+class IndexTipDetector(KeypointDetector):  # This class is maintained to support older version configs
+    def __init__(self, cfg):
+        super().__init__(cfg)
+        self.kp_idx = 8
 
 
 @DETECTOR.register()
