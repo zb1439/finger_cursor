@@ -6,6 +6,9 @@ _config_dict = dict(
         DETECTOR=dict(
             NAME="IndexTipDetector",
         )
+    ),
+    CONTROLLER=dict(
+        SCALE=[3200, 3200],
     )
 )
 

@@ -1,7 +1,0 @@
-*.pyc
-*.vscode
-/dist
-settings.json
-.idea/
-.venv/
-*.DS_Store

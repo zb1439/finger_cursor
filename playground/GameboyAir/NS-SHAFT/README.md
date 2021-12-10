@@ -7,9 +7,9 @@ This is an imitation of the [NS-SHAFT](https://en.wikipedia.org/wiki/NS-Shaft) g
 ![ns-shaft screenshot](https://user-images.githubusercontent.com/1459980/29251832-f816b9d0-808e-11e7-9bbc-c03d5da87973.jpg)
 
 ## How to play
-* **go left**: press the left half of the screen (for touch screen device), or press the <kbd>&larr;</kbd> key (for keyboard or joystick)
+* **go left**: fist lean left
 
-* **go right**: press the right half of the screen, or press the <kbd>&rarr;</kbd> key
+* **go right**: fist lean right
 
 * **start/resume game**: press the <kbd>play again</kbd> / <kbd>continue</kbd> button on screen, or press the <kbd>Space</kbd> / <kbd>Ok</kbd> key
 

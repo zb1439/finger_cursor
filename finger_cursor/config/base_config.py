@@ -71,7 +71,7 @@ _config_dict = dict(
         NAME="SimpleRelativeController",
         # NAME="SimpleAbsoluteController",
         HISTORY=5,
-        SCALE=(3200, 2400),
+        SCALE=(2800, 2400),
     ),
     APPLICATION=dict(
         NAME="CursorControl",

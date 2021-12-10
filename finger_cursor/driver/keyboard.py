@@ -5,9 +5,10 @@ def str_to_key(func):
     def wrapper(obj, key):
         if hasattr(Key, key):
             key = getattr(Key, key)
-        else:
+        try:
+            func(obj, key)
+        except:
             raise ValueError(f"{key} does not exist in the key map")
-        func(obj, key)
 
     return wrapper
 
