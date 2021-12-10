@@ -36,7 +36,8 @@ setup(
         'pyobjc==7.3',
         'mediapipe',
         'pygame==2.1.0',
-        'nes-py'
+        'nes-py',
+        "scikit-image"
     ],
     scripts=["tools/finger_cursor"],
 )
