@@ -47,7 +47,7 @@ def stream(capturer, freq=100, on_exit=27, on_capture=32, max_run=-1, capture_ca
         if key == on_exit:
             break
         elif 0 < on_capture == key and capture_callback is not None:
-            capture_callback()
+            capture_callback(frame)
 
         if max_run > 0:
             frame_count += 1
@@ -74,6 +74,15 @@ class Camera:
         raise NotImplementedError
 
     def capture_callback(self):
+        """
+        :return: a function which takes an image as input and dump all necessary info inside the function
+        e.g.,
+            def foo(image):
+             cv2.save('xxx.jpg', image)
+             feature = queue('MediaPipeHandLandmark')[-1]
+             np.save('xxx.npy', feature)
+            return foo
+        """
         return None
 
     def exit_callback(self):
