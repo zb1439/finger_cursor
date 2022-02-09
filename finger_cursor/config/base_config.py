@@ -55,10 +55,12 @@ _config_dict = dict(
         ),
         DETECTOR=dict(
             NAME="KalmanDetector",
-            WRAPPED_NAME="IndexTipDetector",
+            # NAME="IndexTipDetector",
+            WRAPPED_NAME="KeypointDetector",
             FEATURE=[("landmark", "MediaPipeHandLandmark")],
             MEASURE_NOISE=1.,
             PROCESS_NOISE=0.003,
+            TRACK_KEYPOINT=8,
         ),
         FEATURE_EXTRACTOR=[
             ("MediaPipeHandLandmark", dict(capacity=1000), dict()),
@@ -68,11 +70,16 @@ _config_dict = dict(
     CONTROLLER=dict(
         NAME="SimpleRelativeController",
         # NAME="SimpleAbsoluteController",
-        HISTORY=2,
-        SCALE=(3200, 2400),
+        HISTORY=5,
+        SCALE=(2800, 2400),
+    ),
+    APPLICATION=dict(
+        NAME="CursorControl",
+        ASYNC=False,
     ),
     VISUALIZATION=dict(
         LANDMARK=True,
+        SHOW_WINDOW=True,
     ),
 )
 

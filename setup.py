@@ -32,6 +32,12 @@ setup(
         'easydict',
         'colorama',
         'tabulate',
+        'pynput==1.7.3',
+        'pyobjc==7.3',
+        'mediapipe',
+        'pygame==2.1.0',
+        'nes-py',
+        "scikit-image"
     ],
     scripts=["tools/finger_cursor"],
 )

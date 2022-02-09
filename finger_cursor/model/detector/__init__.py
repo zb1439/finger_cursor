@@ -1,1 +1,1 @@
-from .detector import DETECTOR, Detector
+from .detector import DETECTOR, Detector, KalmanDetector, KeypointDetector

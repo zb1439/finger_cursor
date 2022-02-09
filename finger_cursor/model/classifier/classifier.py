@@ -45,8 +45,10 @@ class RuleClassifier(Classifier):
         if not landmarks.multi_hand_landmarks:
             return 0
         landmarks = landmarks.multi_hand_landmarks[0].landmark
-        fingers = features["fingers"]
-        fingers = np.stack(fingers, 0)
+
+        # Voting for fingers
+        fingers = features["fingers"]  # [[5], [5], ..., [5]] list of t fingers
+        fingers = np.stack(fingers, 0)  # stack over time dimension
         fingers = np.sum(fingers, 0) > (len(fingers) // 2)
 
         def distance(pt1, pt2):
@@ -55,17 +57,19 @@ class RuleClassifier(Classifier):
         pick_dist = distance(landmarks[4], landmarks[8]) / (distance(landmarks[12], landmarks[0]) + 1e-5)
         swipe_dist = np.mean([distance(landmarks[i], landmarks[i+4]) for i in [6, 7, 8]]) \
                      / (distance(landmarks[8], landmarks[0]) + 1e-5)
-        if not np.any(fingers):
+        if not np.any(fingers):  # no straight finger (fist)
             return 0
-        if pick_dist <= 0.09:
+        if pick_dist <= 0.09:  # thumb tip to index tip smaller than middle tip to wrist (ok)
             return 1
         if fingers[1] and fingers[2] and swipe_dist <= 0.09 and swipe_dist < pick_dist \
                 and not fingers[0] and not fingers[3] and not fingers[4]:
+            # distances between index finger keypoints and middle finger keypoints
+            # less than the distance from index finger tip to wrist (victory w/ two finger closed, click)
             return 4
-        if np.all(fingers):
+        if np.all(fingers):  # open hand
             return 5
-        if fingers[1] and fingers[2] and not fingers[0] and not fingers[3] and not fingers[4]:
+        if fingers[1] and fingers[2] and not fingers[0] and not fingers[3] and not fingers[4]:  # victory
             return 3
-        if fingers[1] and not fingers[2] and not fingers[0]:
+        if fingers[1] and not fingers[2] and not fingers[0]:  # point
             return 2
         return 0
