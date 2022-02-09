@@ -49,7 +49,8 @@ class FeatureExtractorGraph:
             assert cfg[0] not in all_config
             all_config[cfg[0]] = cfg[1:]
             for child in cfg[2].values():
-                roots.remove(child)
+                if child in roots:  # fix: the child might be removed already
+                    roots.remove(child)
 
         self.roots = [FEATURE_EXTRACTOR.get(name)(all_config, roots) for name in roots]
 
@@ -144,6 +145,18 @@ class FingerDescriptor(FeatureExtractor):  # rule-based finger indicator, depend
 
 
 @FEATURE_EXTRACTOR.register()
-class RotationDescriptor(FeatureExtractor):  # TODO
+class RotationDescriptor(FeatureExtractor):  # TODO: 2d rotation detection
     def apply(self, image, extra_info):
-        raise NotImplementedError
+        features = queue(self.dependent_names["landmark"])[-1]
+        if not features.multi_hand_landmarks:
+            return 0
+
+        landmark = features.multi_hand_landmarks[0].landmark
+        blue_vec = np.array([landmark[17].x - landmark[5].x, landmark[17].y - landmark[5].y])
+        red_vec = np.array([landmark[0].x - landmark[9].x, landmark[0].y - landmark[9].y])
+        green_vec = blue_vec + red_vec
+        rotation = np.arctan(green_vec[1] / green_vec[0]) * 180 / np.pi if green_vec[0] != 0 else (
+            90 if green_vec[1] > 0 else -90
+        )
+        print(rotation)
+        return rotation
