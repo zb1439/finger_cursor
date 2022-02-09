@@ -1,12 +1,22 @@
 import cv2
-
-from finger_cursor.utils import CameraException, ExitException, Registry, queue
+import sys
+import os
+import keyboard
+sys.path.append('/Users/Skye/finger_cursor/')
+from finger_cursor.utils import CameraException, ExitException, Registry, queue, data_collection
 
 
 CAMERA = Registry("CAMERA")
 
 
-def stream(capturer, freq=100, on_exit=27, on_capture=32, max_run=-1, capture_callback=None, exit_callback=None, max_error=10):
+def stream(capturer, 
+           freq=100,
+           on_exit=27,
+           on_capture=32,
+           max_run=-1,
+           capture_callback=None,
+           exit_callback=None,
+           max_error=10):
     """
     :param capturer: video capture or other video frames (probably we need to wrap a video reader?)
     :param freq: time interval for capturing the next image
@@ -20,6 +30,12 @@ def stream(capturer, freq=100, on_exit=27, on_capture=32, max_run=-1, capture_ca
     """
     error_count = 0
     frame_count = 0
+
+    if capture_callback is not None:
+        class_label = data_collection.get_label_class()
+        root_path = os.getcwd()
+        img_path, label_path = data_collection.mkdirs(root_path, class_label)
+
     while True:
         got_image, frame = False, None
         while not got_image and (error_count < max_error or max_error == -1):
@@ -43,16 +59,15 @@ def stream(capturer, freq=100, on_exit=27, on_capture=32, max_run=-1, capture_ca
             raise ValueError("Error when flipping the frame, check if you really got a frame")
         yield frame
 
-        key = cv2.waitKey(freq) & 0xFF
-        if key == on_exit:
+        if keyboard.is_pressed('q'):
             break
-        elif 0 < on_capture == key and capture_callback is not None:
-            capture_callback(frame)
+        elif keyboard.is_pressed('c') and capture_callback is not None:
+            print('Capturing frame.')
+            capture_callback(frame, frame_count, img_path, label_path)
 
-        if max_run > 0:
-            frame_count += 1
-            if frame_count > max_run:
-                break
+        frame_count += 1
+        if max_run > 0 and frame_count > max_run:
+            break
 
     if exit_callback is not None:
         exit_callback()
@@ -111,3 +126,4 @@ class VirtualCamera(DefaultCamera):
     def stream(self):
         return stream(self.cap, self.freq, self.on_exit, on_capture=32,  # 32 is for spacebar
                       capture_callback=self.capture_callback(), exit_callback=self.exit_callback(), max_error=-1)
+
