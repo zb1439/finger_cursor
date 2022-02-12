@@ -7,9 +7,9 @@ _config_dict=dict(
             NAME="CollectingCamera",
             VIDEO_PATH="",
         ),
-        CONTROLLER=dict(
-            NAME="DummyController",
-        )
+    ),
+    CONTROLLER=dict(
+        NAME="DummyController",
     ),
 )
 
