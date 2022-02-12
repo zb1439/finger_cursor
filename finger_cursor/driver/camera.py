@@ -61,6 +61,7 @@ def stream(capturer,
             raise ValueError("Error when flipping the frame, check if you really got a frame")
         yield frame
 
+        cv2.waitKey(1)
         if keyboard.is_pressed('q'):
             break
         elif keyboard.is_pressed('c') and capture_callback is not None:
