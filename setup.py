@@ -34,7 +34,7 @@ setup(
         'tabulate',
         'pynput==1.7.3',
         'pyobjc==7.3',
-        'mediapipe',
+        'mediapipe==0.8.9.1',
         'pygame==2.1.0',
         'nes-py',
         "scikit-image",

@@ -1,4 +1,6 @@
 import cv2
+from datetime import datetime
+import json
 import keyboard
 import os
 import sys
@@ -6,11 +8,10 @@ import sys
 sys.path.append('/Users/Skye/finger_cursor/')
 from finger_cursor.utils import CameraException, ExitException, Registry, queue, data_collection
 
-
 CAMERA = Registry("CAMERA")
 
 
-def stream(capturer, 
+def stream(capturer,
            freq=100,
            on_exit=27,
            on_capture=32,
@@ -31,12 +32,6 @@ def stream(capturer,
     """
     error_count = 0
     frame_count = 0
-
-    if capture_callback is not None:
-        class_label = data_collection.get_label_class()
-        root_path = os.getcwd()
-        username = root_path.split('/')[2]
-        img_path, label_path = data_collection.mkdirs(root_path, class_label)
 
     while True:
         got_image, frame = False, None
@@ -66,7 +61,7 @@ def stream(capturer,
             break
         elif keyboard.is_pressed('c') and capture_callback is not None:
             print('Capturing frame.')
-            capture_callback(frame, frame_count, img_path, label_path, username)
+            capture_callback(frame, frame_count)
 
         frame_count += 1
         if max_run > 0 and frame_count > max_run:
@@ -130,3 +125,45 @@ class VirtualCamera(DefaultCamera):
         return stream(self.cap, self.freq, self.on_exit, on_capture=32,  # 32 is for spacebar
                       capture_callback=self.capture_callback(), exit_callback=self.exit_callback(), max_error=-1)
 
+
+@CAMERA.register()
+class CollectingCamera(DefaultCamera):
+    def __init__(self, cfg):
+        super().__init__(cfg)
+        self.class_label = data_collection.get_label_class()
+        root_path = os.getcwd()
+        self.username = root_path.split('/')[2]
+        self.img_path, self.label_path = data_collection.mkdirs(root_path, self.class_label)
+
+    def capture_callback(self):
+        img_path, label_path = self.img_path, self.label_path
+        prefix = self.username + datetime.now().strftime("%Y%m%d%H%M%S")
+
+        def func(img, frame_count):
+            print('Capturing image', frame_count)
+            print('Saving to', img_path)
+            img_name = os.path.join(img_path, prefix + '_' + str(frame_count) + '.png')
+            cv2.imwrite(img_name, img)
+
+            gt = {'multi_hand_landmarks': [],
+                  'multi_hand_world_landmarks': [],
+                  'multi_handedness': []}
+            feature = queue("MediaPipeHandLandmark")[-1]
+
+            for data_pt in feature.multi_hand_landmarks:
+                keypoints = [{'x': info.x, 'y': info.y, 'z': info.z} \
+                             for info in data_pt.landmark]
+                gt['multi_hand_landmarks'] += keypoints
+
+            for data_pt in feature.multi_hand_world_landmarks:
+                keypoints = [{'x': info.x, 'y': info.y, 'z': info.z} \
+                             for info in data_pt.landmark]
+                gt['multi_hand_world_landmarks'] += keypoints
+
+            gt['multi_handedness'] = [{'index': info.index, 'score': info.score, 'label': info.label} \
+                                      for info in feature.multi_handedness[0].classification]
+
+            with open(os.path.join(label_path, prefix + '_' + str(frame_count) + '.json'), 'w') as f:
+                json.dump(gt, f, indent=4)
+
+        return func

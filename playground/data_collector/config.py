@@ -1,13 +1,15 @@
 from finger_cursor.config import BaseConfig
-from camera import *  # noqa
 
 
 _config_dict=dict(
     DRIVER=dict(
-       CAMERA=dict(
-           NAME="CollectingCamera",
-           VIDEO_PATH="",
-       ),
+        CAMERA=dict(
+            NAME="CollectingCamera",
+            VIDEO_PATH="",
+        ),
+        CONTROLLER=dict(
+            NAME="DummyController",
+        )
     ),
 )
 
