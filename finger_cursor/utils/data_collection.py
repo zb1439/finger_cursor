@@ -23,6 +23,7 @@ def mkdirs(root_path, class_label):
 def get_username():
     return pwd.getpwuid(os.getuid())[0]
 
+
 def get_label_class():
     input_msg = '''
             Choose a label class to run data collection:
