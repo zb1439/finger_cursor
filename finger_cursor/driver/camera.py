@@ -1,27 +1,23 @@
 import cv2
 from datetime import datetime
 import json
-import keyboard
 import os
-import sys
 
-sys.path.append('/Users/Skye/finger_cursor/')
+from .keyboard import add_listener, is_pressed, listener
 from finger_cursor.utils import CameraException, ExitException, Registry, queue, data_collection
 
 CAMERA = Registry("CAMERA")
 
 
 def stream(capturer,
-           freq=100,
-           on_exit=27,
-           on_capture=32,
+           on_exit='q',
+           on_capture='c',
            max_run=-1,
            capture_callback=None,
            exit_callback=None,
            max_error=10):
     """
     :param capturer: video capture or other video frames (probably we need to wrap a video reader?)
-    :param freq: time interval for capturing the next image
     :param on_exit: key for exit (default: esc)
     :param on_capture: key for capture (default: space)
     :param max_run: if max_run > 0, we will run the loop at most max_run times
@@ -32,6 +28,10 @@ def stream(capturer,
     """
     error_count = 0
     frame_count = 0
+    add_listener(on_capture)
+    add_listener(on_exit)
+
+    listener_start = False  # pynput listener has to start after first call on cv2.waitKey (reason unknown)
 
     while True:
         got_image, frame = False, None
@@ -57,9 +57,14 @@ def stream(capturer,
         yield frame
 
         cv2.waitKey(1)
-        if keyboard.is_pressed('q'):
+        if not listener_start:
+            listener.start()
+            listener_start = True
+
+        if is_pressed(on_exit):
+            print('Program exit.')
             break
-        elif keyboard.is_pressed('c') and capture_callback is not None:
+        elif capture_callback is not None and is_pressed(on_capture):
             print('Capturing frame.')
             capture_callback(frame, frame_count)
 
@@ -75,7 +80,6 @@ def stream(capturer,
 class Camera:
     def __init__(self, cfg):
         self.cfg = cfg
-        self.freq = 1000 // cfg.DRIVER.CAMERA.FPS
         self.on_exit = cfg.DRIVER.CAMERA.ON_EXIT
         self.device_id = cfg.DRIVER.CAMERA.DEVICE_INDEX
         self.cap = self.setup()
@@ -108,7 +112,7 @@ class DefaultCamera(Camera):
         return cv2.VideoCapture(self.device_id)
 
     def stream(self):
-        return stream(self.cap, self.freq, self.on_exit, on_capture=32,  # 32 is for spacebar
+        return stream(self.cap, self.on_exit, on_capture='c',
                       capture_callback=self.capture_callback(), exit_callback=self.exit_callback())
 
 
@@ -122,7 +126,7 @@ class VirtualCamera(DefaultCamera):
         return cv2.VideoCapture(self.video_path)
 
     def stream(self):
-        return stream(self.cap, self.freq, self.on_exit, on_capture=32,  # 32 is for spacebar
+        return stream(self.cap, self.on_exit, on_capture='c',
                       capture_callback=self.capture_callback(), exit_callback=self.exit_callback(), max_error=-1)
 
 
@@ -140,15 +144,18 @@ class CollectingCamera(DefaultCamera):
         prefix = self.username + datetime.now().strftime("%Y%m%d%H%M%S")
 
         def func(img, frame_count):
-            print('Capturing image', frame_count)
-            print('Saving to', img_path)
             img_name = os.path.join(img_path, prefix + '_' + str(frame_count) + '.png')
-            cv2.imwrite(img_name, img)
 
             gt = {'multi_hand_landmarks': [],
                   'multi_hand_world_landmarks': [],
                   'multi_handedness': []}
             feature = queue("MediaPipeHandLandmark")[-1]
+            if feature is None:
+                return
+
+            print('Capturing image', frame_count)
+            print('Saving to', img_path)
+            cv2.imwrite(img_name, img)
 
             for data_pt in feature.multi_hand_landmarks:
                 keypoints = [{'x': info.x, 'y': info.y, 'z': info.z} \

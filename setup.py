@@ -38,7 +38,6 @@ setup(
         'pygame==2.1.0',
         'nes-py',
         "scikit-image",
-        "keyboard"
     ],
     scripts=["tools/finger_cursor"],
 )

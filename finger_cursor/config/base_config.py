@@ -31,8 +31,7 @@ _config_dict = dict(
     DRIVER=dict(
        CAMERA=dict(
            NAME="DefaultCamera",
-           FPS=60,
-           ON_EXIT=27,
+           ON_EXIT='q',
            DEVICE_INDEX=0,
            VIDEO_PATH="",
        ),
