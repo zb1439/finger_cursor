@@ -1,8 +1,9 @@
 import argparse
+import cv2
 import sys
 
 from finger_cursor.controller import CONTROLLER
-from finger_cursor.driver import CAMERA, Keyboard, MacMouse, WinMouse
+from finger_cursor.driver import CAMERA, MacMouse, WinMouse
 from finger_cursor.model import CLASSIFIER, DETECTOR, FeatureExtractorGraph
 from finger_cursor.preprocessor import PreprocessorStack
 from finger_cursor.utils import AdaptingException, ExitException, queue
