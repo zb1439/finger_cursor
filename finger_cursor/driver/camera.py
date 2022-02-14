@@ -136,7 +136,8 @@ class CollectingCamera(DefaultCamera):
         super().__init__(cfg)
         self.class_label = data_collection.get_label_class()
         root_path = os.getcwd()
-        self.username = root_path.split('/')[2]
+        # self.username = root_path.split('/')[2]
+        self.username = data_collection.get_username()
         self.img_path, self.label_path = data_collection.mkdirs(root_path, self.class_label)
 
     def capture_callback(self):
