@@ -79,7 +79,6 @@ def is_pressed(key):
     assert key in keys, f"{key} not in listener!"
     rtn = keys[key]
     keys[key] = False
-    if key == 'q' and rtn: print(keys, key, rtn)
     return rtn
 
 
