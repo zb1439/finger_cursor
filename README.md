@@ -27,20 +27,23 @@ and basic utilities.
 
 1. To run with default settings.
 
-    `$cd <path_to_finger_cursor>/tools/`
-
-    `$bash finger_cursor`
+    ```bash
+    cd <path_to_finger_cursor>/tools/
+    bash finger_cursor
+    ```
 
 2. To run with data collector.
 
-    `$cd <path_to_finger_cursor>/playground/data_collector/`
+    ```bash
+    cd <path_to_finger_cursor>/playground/data_collector/
+    bash ../../tools/finger_cursor
+    ```
 
-    ``$bash ../../tools/finger_cursor``
-
-    **Note**: You need to run the `finger_cursor` bash script from `data_collector` folder to use the config file in that folder. Otherwise the collecting camera will NOT be triggered.
+     **_Note_**: You need to run the `finger_cursor` bash script from `data_collector` folder to use the config file in that folder. Otherwise the collecting camera will NOT be triggered.
 
 3. To run with customized configuration.
 
-    - Create a new folder under `/finger_cursor/playground/`.
-    - Create your customized `config.py` inside the new folder created in the above step. (See `/finger_cursor/config/base_config.py` as an example.)
+    - Create a new folder `<somefolder>` under `/finger_cursor/playground/`.
+    - Create your customized `config.py` inside `<somefolder>`. (See `/finger_cursor/config/base_config.py` as an example.)
     - If necessary, create customized modules that inherite from existing finger_cursor library according to your need. (See `/finger_cursor/playground/data_collector/` as an example.)
+    - Run `/finger_cursor/tools/finger_cursor` bash script from `<somefolder>`. 
