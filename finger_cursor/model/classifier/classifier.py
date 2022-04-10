@@ -1,4 +1,6 @@
 import numpy as np
+import pickle
+from sklearn.neural_network import MLPClassifier
 
 from finger_cursor.utils import queue, Registry
 
@@ -73,3 +75,37 @@ class RuleClassifier(Classifier):
         if fingers[1] and not fingers[2] and not fingers[0]:  # point
             return 2
         return 0
+
+    
+@CLASSIFIER.register()
+class MLPClassifier(Classifier):
+    
+    def __init__(self, cfg):
+        super().__init__(cfg)
+        with open("finger_cursor/model/classifier/mlp_classifier.pickle", "rb") as f:
+            self.clf = pickle.load(f)
+    
+    def predict(self, features):
+        mapping_dict = {
+            0: 0,
+            1: 0,
+            2: 4,
+            3: 5,
+            4: 2,
+            5: 0,
+            6: 0
+        }
+        landmarks = features["landmark"][-1]
+        if not landmarks.multi_hand_landmarks:
+            return 0
+        landmarks = landmarks.multi_hand_landmarks[0].landmark
+        
+        singleData = []
+        for landmark in landmarks:
+            singleData.append(landmark.x)
+            singleData.append(landmark.y)
+            singleData.append(landmark.z)
+        label = self.clf.predict([singleData])
+        print(label[0])
+        
+        return mapping_dict[label[0]]
