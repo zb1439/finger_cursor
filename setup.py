@@ -38,6 +38,9 @@ setup(
         'pygame==2.1.0',
         'nes-py',
         "scikit-image",
+        "torch>=1.5.0",
+        "torchvision",
+        "pillow",
     ],
     scripts=["tools/finger_cursor"],
 )

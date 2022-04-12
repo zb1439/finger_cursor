@@ -51,10 +51,12 @@ class FeatureExtractorGraph:
             for child in cfg[2].values():
                 if child in roots:  # fix: the child might be removed already
                     roots.remove(child)
+        self.queue = queue("frame", 3)
 
         self.roots = [FEATURE_EXTRACTOR.get(name)(all_config, roots) for name in roots]
 
     def apply(self, image, extra_info):
+        self.queue.add(image)
         for root in self.roots:
             root(image, extra_info)
 
