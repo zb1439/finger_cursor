@@ -174,3 +174,33 @@ class CollectingCamera(DefaultCamera):
                 json.dump(gt, f, indent=4)
 
         return func
+
+
+class Sol:
+    def __init__(self):
+        self.duplicates = set()
+        self.nondup = set()
+
+    def countNumbers(self, arr):
+        for lst in arr:
+            count = 0
+            start = lst[0]
+            end = lst[1]
+            for i in range(start, end + 1):
+                if i in self.duplicates:
+                    count += 1
+                    continue
+                if self.check(i):
+                    self.duplicates.add(i)
+                    count += 1;
+            print(end - start + 1 - count)
+
+    def check(self, num):
+        seen = [False for _ in range(10)]
+        while num > 0:
+            n = num % 10
+            if seen[n]:
+                return True
+            seen[n] = True
+            num /= 10
+        return False
