@@ -57,10 +57,14 @@ class RuleClassifier(Classifier):
         pick_dist = distance(landmarks[4], landmarks[8]) / (distance(landmarks[12], landmarks[0]) + 1e-5)
         swipe_dist = np.mean([distance(landmarks[i], landmarks[i+4]) for i in [6, 7, 8]]) \
                      / (distance(landmarks[8], landmarks[0]) + 1e-5)
+        thumb_to_index = np.min([distance(landmarks[4], landmarks[i]) for i in [5, 6, 7, 8]]) \
+                         / (distance(landmarks[4], landmarks[2]))
         if not np.any(fingers):  # no straight finger (fist)
             return 0
         if pick_dist <= 0.09:  # thumb tip to index tip smaller than middle tip to wrist (ok)
             return 1
+        if fingers[0] and not np.any(fingers[1:-1]) and thumb_to_index >= 0.5:
+            return 6
         if fingers[1] and fingers[2] and swipe_dist <= 0.09 and swipe_dist < pick_dist \
                 and not fingers[0] and not fingers[3] and not fingers[4]:
             # distances between index finger keypoints and middle finger keypoints

@@ -18,7 +18,7 @@ class MobileNetV2(Classifier):
             2: 1,
             3: 4,
             4: 5,
-            5: 0,
+            5: 6,
             6: 3
         }
         self.transform = transforms.Compose([

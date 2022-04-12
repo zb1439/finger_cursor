@@ -12,6 +12,9 @@ class Controller:
         self.cfg = cfg
         self.history = cfg.CONTROLLER.HISTORY
         self.scale = cfg.CONTROLLER.SCALE
+        self.speed_coeffs = [0.25, 0.5, 1., 2., 4.]
+        self.speed_level = 2
+
         self.cls_queue = queue(cfg.MODEL.CLASSIFIER.NAME)
         self.det_queue = queue(cfg.MODEL.DETECTOR.NAME)
         if sys.platform == "darwin":
@@ -32,7 +35,8 @@ class Controller:
     def __call__(self):
         gestures = self.cls_queue[-self.history:]
         coords = self.det_queue[-self.history:]
-        coords = [[c[0] * self.scale[0], c[1] * self.scale[1]] for c in coords]
+        coeff = self.speed_coeffs[self.speed_level]
+        coords = [[c[0] * self.scale[0] * coeff, c[1] * self.scale[1] * coeff] for c in coords]
         coord = self.apply(gestures, coords)
         return gestures[-1], coord
 
@@ -51,6 +55,7 @@ class SimpleRelativeController(Controller):
         self.right_key = False
 
     def apply(self, gestures, coords):
+        print(self.speed_level)
         gesture = gestures[-1]
         if len(coords) >= 2:
             dx = coords[-1][0] - coords[-2][0]
@@ -97,6 +102,20 @@ class SimpleRelativeController(Controller):
             return 0, dy
         elif gesture == "point" and len(gestures) >= 2 and gestures[-2] == "point":
             self.mouse.move_rel(dx, dy)
+        elif gesture == "speed-adjust":
+            if len(gestures) >= 2:
+                start = float("inf")
+                for i in range(len(gestures) - 1):
+                    if gestures[i] != "speed-adjust":
+                        start = i
+                if start < len(gestures):
+                    all_na = True
+                    for i in range(start + 1, len(gestures) - 1):
+                        if gestures[i] == "speed-adjust":
+                            all_na = False
+                            break
+                    if all_na:
+                        self.speed_level = (self.speed_level + 1) % 5
         return dx, dy
 
 
@@ -138,4 +157,18 @@ class SimpleAbsoluteController(Controller):
             return 0, dy
         elif gesture == "point" and len(gestures) >= 2 and gestures[-2] == "point":
             self.mouse.move(coord[0], coord[1])
+        elif gesture == "speed-adjust":
+            if len(gestures) >= 2:
+                start = float("inf")
+                for i in range(len(gestures) - 1):
+                    if gestures[i] != "speed-adjust":
+                        start = i
+                if start < len(gestures):
+                    all_na = True
+                    for i in range(start + 1, len(gestures) - 1):
+                        if gestures[i] == "speed-adjust":
+                            all_na = False
+                            break
+                    if all_na:
+                        self.speed_level = (self.speed_level + 1) % 5
         return coord

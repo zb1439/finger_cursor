@@ -50,7 +50,7 @@ _config_dict = dict(
             NAME="RuleClassifier",
             FEATURE=[("landmark", "MediaPipeHandLandmark"), ("fingers", "FingerDescriptor")],
             HISTORY=5,
-            GESTURES=["n/a", "drag", "point", "swipe", "click", "right-click"],
+            GESTURES=["n/a", "drag", "point", "swipe", "click", "right-click", "speed-adjust"],
         ),
         DETECTOR=dict(
             NAME="KalmanDetector",
