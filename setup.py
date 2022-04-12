@@ -41,6 +41,7 @@ setup(
         "torch>=1.5.0",
         "torchvision",
         "pillow",
+        "urllib3"
     ],
     scripts=["tools/finger_cursor"],
 )

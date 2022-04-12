@@ -1,9 +1,8 @@
-import numpy as np
 import os.path as osp
-import pickle
 from PIL import Image
 import torch
 from torchvision import models, transforms
+from urllib import request
 
 from finger_cursor.utils import queue
 from .classifier import CLASSIFIER, Classifier
@@ -27,6 +26,10 @@ class MobileNetV2(Classifier):
             transforms.ToTensor(),
         ])
         model_path = osp.join(osp.dirname(__file__), 'mobilenet.pt')
+        if not osp.exists(model_path):
+            print(model_path + " not found, downloading weight file from github...")
+            request.urlretrieve("https://github.com/zb1439/finger_cursor/releases/download/mobilenet/mobilenet.pt",
+                                model_path)
         self.model = models.mobilenet_v2(pretrained=False)
         self.model.classifier[1] = torch.nn.Linear(self.model.last_channel, len(self.cls_mapping))
         if torch.cuda.is_available():
@@ -58,4 +61,3 @@ class MobileNetV2(Classifier):
             pred = pred.cpu()
         pred = pred.numpy().item()
         return self.cls_mapping[pred]
-
