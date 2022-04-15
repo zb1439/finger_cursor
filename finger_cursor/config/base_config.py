@@ -51,6 +51,13 @@ _config_dict = dict(
             FEATURE=[("landmark", "MediaPipeHandLandmark"), ("fingers", "FingerDescriptor")],
             HISTORY=5,
             GESTURES=["n/a", "drag", "point", "swipe", "click", "right-click", "speed-adjust"],
+            ADAPTER=dict(
+                ENABLE=False,
+                SAMPLE_FRAMES=50,
+                N_FRAMES=10,
+                LR=1e-5,
+                EPOCHS=2,
+            ),
         ),
         DETECTOR=dict(
             NAME="KalmanDetector",

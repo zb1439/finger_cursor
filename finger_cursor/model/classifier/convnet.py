@@ -1,3 +1,4 @@
+import numpy as np
 import os.path as osp
 from PIL import Image
 import torch
@@ -6,6 +7,7 @@ from urllib import request
 
 from finger_cursor.utils import queue
 from .classifier import CLASSIFIER, Classifier
+from .adapter import DummyAdapter, TorchAdapter
 
 
 @CLASSIFIER.register()
@@ -38,13 +40,19 @@ class MobileNetV2(Classifier):
         else:
             self.model.load_state_dict(torch.load(model_path, map_location='cpu'))
 
-    def predict(self, features):
-        landmarks = features["landmark"][-1]
-        if not landmarks.multi_hand_landmarks:
-            return 0
-        landmarks = landmarks.multi_hand_landmarks[0].landmark
+        self.adapter = DummyAdapter(cfg, None) if not cfg.MODEL.CLASSIFIER.ADAPTER.ENABLE else \
+            TorchAdapter(cfg, self.model, self.cls_mapping, self.transform)
 
+    def predict(self, features):
+        feature = features["landmark"][-1]
         image = queue("frame")[-1]
+
+        if not feature.multi_hand_landmarks:
+            if self.adapter.need_adapt():
+                self.adapter.no_hand_notice()
+            return 0
+        landmarks = feature.multi_hand_landmarks[0].landmark
+
         image = Image.fromarray(image[..., ::-1])
         xs = [int(l.x * image.size[0]) for l in landmarks]
         ys = [int(l.y * image.size[1]) for l in landmarks]
@@ -53,6 +61,10 @@ class MobileNetV2(Classifier):
         boundary_y_up = max(0, min(ys) - 50)
         boundary_y_down = min(image.size[1], max(ys) + 50)
         image = image.crop((boundary_x_left, boundary_y_up, boundary_x_right, boundary_y_down))
+
+        if self.adapter.need_adapt():
+            self.adapter.adapt(np.array(image), feature)
+
         image = self.transform(image)[None]
         if torch.cuda.is_available():
             image = image.cuda()

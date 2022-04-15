@@ -1,6 +1,4 @@
 import cv2
-from datetime import datetime
-import json
 import os
 
 from .keyboard import add_listener, is_pressed, listener
@@ -136,41 +134,12 @@ class CollectingCamera(DefaultCamera):
         super().__init__(cfg)
         self.class_label = data_collection.get_label_class()
         root_path = os.getcwd()
-        self.username = data_collection.get_username()
         self.img_path, self.label_path = data_collection.mkdirs(root_path, self.class_label)
 
     def capture_callback(self):
         img_path, label_path = self.img_path, self.label_path
-        prefix = self.username + datetime.now().strftime("%Y%m%d%H%M%S")
 
         def func(img, frame_count):
-            img_name = os.path.join(img_path, prefix + '_' + str(frame_count) + '.png')
-
-            gt = {'multi_hand_landmarks': [],
-                  'multi_hand_world_landmarks': [],
-                  'multi_handedness': []}
-            feature = queue("MediaPipeHandLandmark")[-1]
-            if feature is None:
-                return
-
-            print('Capturing image', frame_count)
-            print('Saving to', img_path)
-            cv2.imwrite(img_name, img)
-
-            for data_pt in feature.multi_hand_landmarks:
-                keypoints = [{'x': info.x, 'y': info.y, 'z': info.z} \
-                             for info in data_pt.landmark]
-                gt['multi_hand_landmarks'] += keypoints
-
-            for data_pt in feature.multi_hand_world_landmarks:
-                keypoints = [{'x': info.x, 'y': info.y, 'z': info.z} \
-                             for info in data_pt.landmark]
-                gt['multi_hand_world_landmarks'] += keypoints
-
-            gt['multi_handedness'] = [{'index': info.index, 'score': info.score, 'label': info.label} \
-                                      for info in feature.multi_handedness[0].classification]
-
-            with open(os.path.join(label_path, prefix + '_' + str(frame_count) + '.json'), 'w') as f:
-                json.dump(gt, f, indent=4)
+            data_collection.dump_data(img, queue("MediaPipeHandLandmark")[-1], img_path, label_path, frame_count)
 
         return func

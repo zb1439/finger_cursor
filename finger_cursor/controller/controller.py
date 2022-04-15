@@ -55,7 +55,6 @@ class SimpleRelativeController(Controller):
         self.right_key = False
 
     def apply(self, gestures, coords):
-        print(self.speed_level)
         gesture = gestures[-1]
         if len(coords) >= 2:
             dx = coords[-1][0] - coords[-2][0]
