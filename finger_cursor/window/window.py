@@ -34,7 +34,8 @@ def notice(text, name=None, t=1000):
     image = np.zeros((256, 256), dtype=np.uint8)
     image = cv2.putText(image, text, (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, [256, 256, 256], 2)
     cv2.imshow(name or "demo", image)
-    cv2.waitKey(t)
+    if t > 0:
+        cv2.waitKey(t)
 
 
 def imshow(image, name=None, text=None, normalize="rescale", show=True):

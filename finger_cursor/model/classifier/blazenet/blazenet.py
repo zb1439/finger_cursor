@@ -1,11 +1,12 @@
+import numpy as np
 import os.path as osp
 from PIL import Image
 import torch
 from torchvision import models, transforms
-from urllib import request
 
 from finger_cursor.utils import queue
 from ..classifier import CLASSIFIER, Classifier
+from ..adapter import DummyAdapter, TorchAdapter
 from .blazehand_landmark import BlazeHandLandmark
 
 
@@ -26,7 +27,7 @@ class BlazeNet(Classifier):
             transforms.Resize((256, 256)),
             transforms.ToTensor(),
         ])
-        model_path = osp.join(osp.dirname(__file__), 'blazenet_weight/blazenet_siqi.pt')
+        model_path = osp.join(osp.dirname(__file__), 'blazenet_weight/blazenet_kenny.pt')
         if not osp.exists(model_path):
             print(model_path + " file not found!")
         self.model = BlazeHandLandmark()
@@ -36,11 +37,16 @@ class BlazeNet(Classifier):
         else:
             self.model.load_state_dict(torch.load(model_path, map_location='cpu'))
 
+        self.adapter = DummyAdapter(cfg, None) if not cfg.MODEL.CLASSIFIER.ADAPTER.ENABLE else \
+            TorchAdapter(cfg, self.model, self.cls_mapping, self.transform)
+
     def predict(self, features):
-        landmarks = features["landmark"][-1]
-        if not landmarks.multi_hand_landmarks:
+        feature = features["landmark"][-1]
+        if not feature.multi_hand_landmarks:
+            if self.adapter.need_adapt():
+                self.adapter.no_hand_notice()
             return 0
-        landmarks = landmarks.multi_hand_landmarks[0].landmark
+        landmarks = feature.multi_hand_landmarks[0].landmark
 
         image = queue("frame")[-1]
         image = Image.fromarray(image[..., ::-1])
@@ -51,6 +57,10 @@ class BlazeNet(Classifier):
         boundary_y_up = max(0, min(ys) - 50)
         boundary_y_down = min(image.size[1], max(ys) + 50)
         image = image.crop((boundary_x_left, boundary_y_up, boundary_x_right, boundary_y_down))
+
+        if self.adapter.need_adapt():
+            self.adapter.adapt(np.array(image), feature)
+
         image = self.transform(image)[None]
         if torch.cuda.is_available():
             image = image.cuda()

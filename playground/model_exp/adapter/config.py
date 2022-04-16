@@ -4,7 +4,7 @@ from finger_cursor.config import BaseConfig
 _config_dict=dict(
     MODEL=dict(
         CLASSIFIER=dict(
-            NAME="MobileNetV2",
+            NAME="BlazeNet",
             ADAPTER=dict(
                 ENABLE=True,
                 SAMPLE_FRAMES=50,
@@ -13,7 +13,10 @@ _config_dict=dict(
                 EPOCHS=2,
             ),
         )
-    )
+    ),
+    CONTROLLER=dict(
+        NAME="DummyController",
+    ),
 )
 
 

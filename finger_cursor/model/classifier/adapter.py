@@ -1,19 +1,19 @@
 import cv2
 import numpy as np
 import os
+from PIL import Image
 import random
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-import torchvision.transforms as transforms
+from torch.utils.data import DataLoader
+import torchvision.transforms as xform
 
-from finger_cursor.driver import Keyboard
-from finger_cursor.utils import AdaptingException, data_collection
+from finger_cursor.utils import AdaptingException
 from finger_cursor.window import imshow, notice
 
 
 class Adapter:
-    def __init__(self, cfg, model, cls_mapping=None, transform=None):
+    def __init__(self, cfg, model, cls_mapping=None, transforms=None, use_coords=False):
         self.cfg = cfg
         self.model = model
         self.classes = cfg.MODEL.CLASSIFIER.GESTURES
@@ -31,6 +31,7 @@ class Adapter:
         self.adapt_done = False
         self.cls_mapping = cls_mapping
         self.transform = transforms
+        self.use_coords = use_coords
 
     def need_adapt(self):
         return not self.adapt_done
@@ -40,21 +41,21 @@ class Adapter:
 
 
 class DummyAdapter(Adapter):
-    def __init__(self, cfg, model, cls_mapping=None, transforms=None):
+    def __init__(self, cfg, model, cls_mapping=None, transforms=None, use_coords=False):
         super(DummyAdapter, self).__init__(cfg, model)
         self.adapt_done = True
 
 class TorchAdapter(Adapter):
-    def __init__(self, cfg, model, cls_mapping=None, transforms=None):
+    def __init__(self, cfg, model, cls_mapping=None, transforms=None, use_coords=False):
         super(TorchAdapter, self).__init__(cfg, model, cls_mapping, transforms)
         self.collected = []  # (cropped_image, coords_vector, label)
         self.current_collected = []
         if self.cls_mapping is None:
             self.cls_mapping = {i: i for i in range(len(self.classes))}
         if self.transform is None:
-            self.transform = transforms.Compose([
-                transforms.Resize((256, 256)),
-                transforms.ToTensor(),
+            self.transform = xform.Compose([
+                xform.Resize((256, 256)),
+                xform.ToTensor(),
             ])
 
     def get_label_gesture(self):
@@ -96,12 +97,61 @@ class TorchAdapter(Adapter):
             self.adapt_count += 1
             if self.adapt_count == len(self.classes) * self.sample_frames:
                 self.adapt_done = True
-                notice("Training", t=0)
+                notice("Training in progress...")
                 self.train_model()
-                Keyboard().press_and_release('1')
+                notice("Training done!")
 
         raise AdaptingException
 
     def train_model(self):
         self.model.train()
+        print("Adaptation started")
+
+        def trivial_collate_fn(x):
+            return x
+
+        loader = DataLoader(self.collected, batch_size=16, shuffle=True, collate_fn=trivial_collate_fn)
+        criterion = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr)
+        PRINT_BATCH_NUM = len(loader)
+
+        for epoch in range(self.epochs):
+            running_loss = 0.0
+            correct = 0
+            for i, data in enumerate(loader):
+                # get the inputs; data is a list of [inputs, labels]
+                inputs, coords, labels = [], [], []
+                for d in data:
+                    inputs.append(d[0])
+                    coords.append(d[1])
+                    labels.append(d[2])
+                inputs = torch.tensor(np.stack([self.transform(Image.fromarray(im)) for im in inputs]), dtype=torch.float32)
+                coords = torch.tensor(np.stack(coords), dtype=torch.float32)
+                labels = torch.tensor(np.array(labels), dtype=torch.long)
+                if torch.cuda.is_available():
+                    inputs = inputs.to('cuda')
+                    labels = labels.to('cuda')
+                    coords = coords.to('cuda')
+
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
+                # forward + backward + optimize
+                if self.use_coords:
+                    outputs = self.model(inputs, coords)
+                else:
+                    outputs = self.model(inputs)
+                loss = criterion(outputs, labels)
+                loss.backward()
+                optimizer.step()
+
+                correct += (torch.max(outputs.data, 1)[1] == labels).float().sum().item()
+
+                # print statistics
+                running_loss += loss.item()
+                if i % PRINT_BATCH_NUM == (PRINT_BATCH_NUM - 1):  # print every 2000 mini-batches
+                    print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / PRINT_BATCH_NUM:.3f}')
+                    running_loss = 0.0
+
+        self.model.eval()
 
